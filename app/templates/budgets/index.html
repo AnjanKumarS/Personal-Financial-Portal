@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Budgets</h1>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBudgetModal">
+            <i class="fas fa-plus"></i> Add Budget
+        </button>
+    </div>
+
+    {% if budgets %}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Your Budgets</h6>
+            <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    {% if active_filter == 'all' %}
+                        All Budgets
+                    {% elif active_filter == 'active' %}
+                        Active Budgets
+                    {% elif active_filter == 'completed' %}
+                        Completed Budgets
+                    {% else %}
+                        Filter
+                    {% endif %}
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                    <li><a class="dropdown-item {% if active_filter == 'all' %}active{% endif %}" href="{{ url_for('budgets.index', filter='all') }}">All Budgets</a></li>
+                    <li><a class="dropdown-item {% if active_filter == 'active' %}active{% endif %}" href="{{ url_for('budgets.index', filter='active') }}">Active</a></li>
+                    <li><a class="dropdown-item {% if active_filter == 'completed' %}active{% endif %}" href="{{ url_for('budgets.index', filter='completed') }}">Completed</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Amount</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Progress</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for budget in budgets %}
+                        <tr>
+                            <td>{{ budget.category }}</td>
+                            <td>${{ "%.2f"|format(budget.amount) }}</td>
+                            <td>{{ budget.start_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ budget.end_date.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                <div class="progress">
+                                    <div class="progress-bar {% if budget.spent_percentage > 100 %}bg-danger{% elif budget.spent_percentage > 75 %}bg-warning{% else %}bg-success{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {{ budget.spent_percentage }}%;" 
+                                         aria-valuenow="{{ budget.spent_percentage }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                        {{ budget.spent_percentage }}%
+                                    </div>
+                                </div>
+                                <small class="text-muted">${{ "%.2f"|format(budget.spent_amount) }} of ${{ "%.2f"|format(budget.amount) }}</small>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editBudgetModal{{ budget.id }}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteBudgetModal{{ budget.id }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        You haven't created any budgets yet. Click the "Add Budget" button to get started.
+    </div>
+    {% endif %}
+
+    <!-- Budget Overview Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Budget Overview</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>Total Budget: <span class="text-primary">${{ "%.2f"|format(total_budget) }}</span></h4>
+                    <h4>Total Spent: <span class="text-danger">${{ "%.2f"|format(total_spent) }}</span></h4>
+                    <h4>Remaining: <span class="text-success">${{ "%.2f"|format(total_budget - total_spent) }}</span></h4>
+                </div>
+                <div class="col-md-6">
+                    <canvas id="budgetChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Budget Modal -->
+<div class="modal fade" id="addBudgetModal" tabindex="-1" aria-labelledby="addBudgetModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addBudgetModalLabel">Create New Budget</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('budgets.add_budget') }}">
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Category</label>
+                        <select class="form-select" id="category" name="category" required>
+                            <option value="">Select a category</option>
+                            <option value="Housing">Housing</option>
+                            <option value="Transportation">Transportation</option>
+                            <option value="Food">Food</option>
+                            <option value="Utilities">Utilities</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Healthcare">Healthcare</option>
+                            <option value="Shopping">Shopping</option>
+                            <option value="Personal">Personal</option>
+                            <option value="Education">Education</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">Amount ($)</label>
+                        <input type="number" step="0.01" class="form-control" id="amount" name="amount" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="start_date" class="form-label">Start Date</label>
+                        <input type="date" class="form-control" id="start_date" name="start_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="end_date" class="form-label">End Date</label>
+                        <input type="date" class="form-control" id="end_date" name="end_date" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create Budget</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Budget Modals -->
+{% for budget in budgets %}
+<div class="modal fade" id="editBudgetModal{{ budget.id }}" tabindex="-1" aria-labelledby="editBudgetModalLabel{{ budget.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editBudgetModalLabel{{ budget.id }}">Edit Budget</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('budgets.edit_budget', budget_id=budget.id) }}">
+                    <div class="mb-3">
+                        <label for="category{{ budget.id }}" class="form-label">Category</label>
+                        <select class="form-select" id="category{{ budget.id }}" name="category" required>
+                            <option value="">Select a category</option>
+                            <option value="Housing" {% if budget.category == 'Housing' %}selected{% endif %}>Housing</option>
+                            <option value="Transportation" {% if budget.category == 'Transportation' %}selected{% endif %}>Transportation</option>
+                            <option value="Food" {% if budget.category == 'Food' %}selected{% endif %}>Food</option>
+                            <option value="Utilities" {% if budget.category == 'Utilities' %}selected{% endif %}>Utilities</option>
+                            <option value="Entertainment" {% if budget.category == 'Entertainment' %}selected{% endif %}>Entertainment</option>
+                            <option value="Healthcare" {% if budget.category == 'Healthcare' %}selected{% endif %}>Healthcare</option>
+                            <option value="Shopping" {% if budget.category == 'Shopping' %}selected{% endif %}>Shopping</option>
+                            <option value="Personal" {% if budget.category == 'Personal' %}selected{% endif %}>Personal</option>
+                            <option value="Education" {% if budget.category == 'Education' %}selected{% endif %}>Education</option>
+                            <option value="Other" {% if budget.category == 'Other' %}selected{% endif %}>Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="amount{{ budget.id }}" class="form-label">Amount ($)</label>
+                        <input type="number" step="0.01" class="form-control" id="amount{{ budget.id }}" name="amount" value="{{ budget.amount }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="start_date{{ budget.id }}" class="form-label">Start Date</label>
+                        <input type="date" class="form-control" id="start_date{{ budget.id }}" name="start_date" value="{{ budget.start_date.strftime('%Y-%m-%d') }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="end_date{{ budget.id }}" class="form-label">End Date</label>
+                        <input type="date" class="form-control" id="end_date{{ budget.id }}" name="end_date" value="{{ budget.end_date.strftime('%Y-%m-%d') }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="spent_amount{{ budget.id }}" class="form-label">Spent Amount ($)</label>
+                        <input type="number" step="0.01" class="form-control" id="spent_amount{{ budget.id }}" name="spent_amount" value="{{ budget.spent_amount }}" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update Budget</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Delete Budget Modals -->
+{% for budget in budgets %}
+<div class="modal fade" id="deleteBudgetModal{{ budget.id }}" tabindex="-1" aria-labelledby="deleteBudgetModalLabel{{ budget.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteBudgetModalLabel{{ budget.id }}">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this budget?</p>
+                <p><strong>Category:</strong> {{ budget.category }}</p>
+                <p><strong>Amount:</strong> ${{ "%.2f"|format(budget.amount) }}</p>
+                <p><strong>Period:</strong> {{ budget.start_date.strftime('%Y-%m-%d') }} to {{ budget.end_date.strftime('%Y-%m-%d') }}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{{ url_for('budgets.delete_budget', budget_id=budget.id) }}">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- JavaScript for Chart -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var ctx = document.getElementById('budgetChart').getContext('2d');
+    var budgetChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ categories|tojson }},
+            datasets: [
+                {
+                    label: 'Budget',
+                    data: {{ budget_amounts|tojson }},
+                    backgroundColor: 'rgba(78, 115, 223, 0.8)',
+                    borderColor: 'rgba(78, 115, 223, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Spent',
+                    data: {{ spent_amounts|tojson }},
+                    backgroundColor: 'rgba(231, 74, 59, 0.8)',
+                    borderColor: 'rgba(231, 74, 59, 1)',
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value;
+                        }
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Budget vs. Actual Spending by Category'
+                },
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

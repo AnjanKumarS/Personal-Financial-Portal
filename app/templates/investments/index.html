@@ -1,0 +1,337 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Investments</h1>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addInvestmentModal">
+            <i class="fas fa-plus"></i> Add Investment
+        </button>
+    </div>
+
+    {% if investments %}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Your Investment Portfolio</h6>
+            <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    {% if active_filter == 'all' %}
+                        All Investments
+                    {% else %}
+                        {{ active_filter }}
+                    {% endif %}
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                    <li><a class="dropdown-item {% if active_filter == 'all' %}active{% endif %}" href="{{ url_for('investments.index', filter='all') }}">All Investments</a></li>
+                    <li><a class="dropdown-item {% if active_filter == 'Stock' %}active{% endif %}" href="{{ url_for('investments.index', filter='Stock') }}">Stocks</a></li>
+                    <li><a class="dropdown-item {% if active_filter == 'Bond' %}active{% endif %}" href="{{ url_for('investments.index', filter='Bond') }}">Bonds</a></li>
+                    <li><a class="dropdown-item {% if active_filter == 'Mutual Fund' %}active{% endif %}" href="{{ url_for('investments.index', filter='Mutual Fund') }}">Mutual Funds</a></li>
+                    <li><a class="dropdown-item {% if active_filter == 'ETF' %}active{% endif %}" href="{{ url_for('investments.index', filter='ETF') }}">ETFs</a></li>
+                    <li><a class="dropdown-item {% if active_filter == 'Real Estate' %}active{% endif %}" href="{{ url_for('investments.index', filter='Real Estate') }}">Real Estate</a></li>
+                    <li><a class="dropdown-item {% if active_filter == 'Cryptocurrency' %}active{% endif %}" href="{{ url_for('investments.index', filter='Cryptocurrency') }}">Cryptocurrency</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Purchase Date</th>
+                            <th>Purchase Price</th>
+                            <th>Current Value</th>
+                            <th>Gain/Loss</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for investment in investments %}
+                        <tr>
+                            <td>{{ investment.name }}</td>
+                            <td>{{ investment.type }}</td>
+                            <td>{{ investment.purchase_date.strftime('%Y-%m-%d') }}</td>
+                            <td>${{ "%.2f"|format(investment.purchase_price) }}</td>
+                            <td>${{ "%.2f"|format(investment.current_value) }}</td>
+                            <td class="{% if investment.gain_loss > 0 %}text-success{% elif investment.gain_loss < 0 %}text-danger{% endif %}">
+                                ${{ "%.2f"|format(investment.gain_loss) }}
+                                ({{ "%.2f"|format(investment.gain_loss_percentage) }}%)
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editInvestmentModal{{ investment.id }}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteInvestmentModal{{ investment.id }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        You haven't added any investments yet. Click the "Add Investment" button to get started.
+    </div>
+    {% endif %}
+
+    <!-- Portfolio Summary Card -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Portfolio Summary</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4>Total Invested: <span class="text-primary">${{ "%.2f"|format(total_invested) }}</span></h4>
+                            <h4>Current Value: <span class="text-primary">${{ "%.2f"|format(total_current_value) }}</span></h4>
+                            <h4>Total Gain/Loss: 
+                                <span class="{% if total_gain_loss > 0 %}text-success{% elif total_gain_loss < 0 %}text-danger{% endif %}">
+                                    ${{ "%.2f"|format(total_gain_loss) }}
+                                    ({{ "%.2f"|format(total_gain_loss_percentage) }}%)
+                                </span>
+                            </h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Asset Allocation</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="assetAllocationChart" width="400" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Chart -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Investment Performance</h6>
+        </div>
+        <div class="card-body">
+            <canvas id="performanceChart" width="800" height="300"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Add Investment Modal -->
+<div class="modal fade" id="addInvestmentModal" tabindex="-1" aria-labelledby="addInvestmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addInvestmentModalLabel">Add New Investment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('investments.add_investment') }}">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Investment Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="type" class="form-label">Investment Type</label>
+                        <select class="form-select" id="type" name="type" required>
+                            <option value="">Select a type</option>
+                            <option value="Stock">Stock</option>
+                            <option value="Bond">Bond</option>
+                            <option value="Mutual Fund">Mutual Fund</option>
+                            <option value="ETF">ETF</option>
+                            <option value="Real Estate">Real Estate</option>
+                            <option value="Cryptocurrency">Cryptocurrency</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="purchase_date" class="form-label">Purchase Date</label>
+                        <input type="date" class="form-control" id="purchase_date" name="purchase_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="purchase_price" class="form-label">Purchase Price ($)</label>
+                        <input type="number" step="0.01" class="form-control" id="purchase_price" name="purchase_price" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quantity" class="form-label">Quantity</label>
+                        <input type="number" step="0.01" class="form-control" id="quantity" name="quantity" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="current_value" class="form-label">Current Value ($)</label>
+                        <input type="number" step="0.01" class="form-control" id="current_value" name="current_value" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Investment</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Investment Modals -->
+{% for investment in investments %}
+<div class="modal fade" id="editInvestmentModal{{ investment.id }}" tabindex="-1" aria-labelledby="editInvestmentModalLabel{{ investment.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editInvestmentModalLabel{{ investment.id }}">Edit Investment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('investments.edit_investment', investment_id=investment.id) }}">
+                    <div class="mb-3">
+                        <label for="name{{ investment.id }}" class="form-label">Investment Name</label>
+                        <input type="text" class="form-control" id="name{{ investment.id }}" name="name" value="{{ investment.name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="type{{ investment.id }}" class="form-label">Investment Type</label>
+                        <select class="form-select" id="type{{ investment.id }}" name="type" required>
+                            <option value="">Select a type</option>
+                            <option value="Stock" {% if investment.type == 'Stock' %}selected{% endif %}>Stock</option>
+                            <option value="Bond" {% if investment.type == 'Bond' %}selected{% endif %}>Bond</option>
+                            <option value="Mutual Fund" {% if investment.type == 'Mutual Fund' %}selected{% endif %}>Mutual Fund</option>
+                            <option value="ETF" {% if investment.type == 'ETF' %}selected{% endif %}>ETF</option>
+                            <option value="Real Estate" {% if investment.type == 'Real Estate' %}selected{% endif %}>Real Estate</option>
+                            <option value="Cryptocurrency" {% if investment.type == 'Cryptocurrency' %}selected{% endif %}>Cryptocurrency</option>
+                            <option value="Other" {% if investment.type == 'Other' %}selected{% endif %}>Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="purchase_date{{ investment.id }}" class="form-label">Purchase Date</label>
+                        <input type="date" class="form-control" id="purchase_date{{ investment.id }}" name="purchase_date" value="{{ investment.purchase_date.strftime('%Y-%m-%d') }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="purchase_price{{ investment.id }}" class="form-label">Purchase Price ($)</label>
+                        <input type="number" step="0.01" class="form-control" id="purchase_price{{ investment.id }}" name="purchase_price" value="{{ investment.purchase_price }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quantity{{ investment.id }}" class="form-label">Quantity</label>
+                        <input type="number" step="0.01" class="form-control" id="quantity{{ investment.id }}" name="quantity" value="{{ investment.quantity }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="current_value{{ investment.id }}" class="form-label">Current Value ($)</label>
+                        <input type="number" step="0.01" class="form-control" id="current_value{{ investment.id }}" name="current_value" value="{{ investment.current_value }}" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update Investment</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Delete Investment Modals -->
+{% for investment in investments %}
+<div class="modal fade" id="deleteInvestmentModal{{ investment.id }}" tabindex="-1" aria-labelledby="deleteInvestmentModalLabel{{ investment.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteInvestmentModalLabel{{ investment.id }}">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this investment?</p>
+                <p><strong>Name:</strong> {{ investment.name }}</p>
+                <p><strong>Type:</strong> {{ investment.type }}</p>
+                <p><strong>Purchase Date:</strong> {{ investment.purchase_date.strftime('%Y-%m-%d') }}</p>
+                <p><strong>Current Value:</strong> ${{ "%.2f"|format(investment.current_value) }}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{{ url_for('investments.delete_investment', investment_id=investment.id) }}">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- JavaScript for Charts -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Asset Allocation Chart
+    var allocationCtx = document.getElementById('assetAllocationChart').getContext('2d');
+    var allocationChart = new Chart(allocationCtx, {
+        type: 'pie',
+        data: {
+            labels: {{ investment_types|tojson }},
+            datasets: [{
+                data: {{ type_values|tojson }},
+                backgroundColor: [
+                    '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+                    '#5a5c69', '#858796'
+                ],
+                hoverBackgroundColor: [
+                    '#2e59d9', '#17a673', '#2c9faf', '#f4b619', '#e02d1b',
+                    '#4e4f52', '#717384'
+                ],
+                hoverBorderColor: "rgba(234, 236, 244, 1)",
+            }],
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        },
+    });
+
+    // Performance Chart
+    var performanceCtx = document.getElementById('performanceChart').getContext('2d');
+    var performanceChart = new Chart(performanceCtx, {
+        type: 'line',
+        data: {
+            labels: {{ performance_dates|tojson }},
+            datasets: [{
+                label: 'Portfolio Value',
+                data: {{ performance_values|tojson }},
+                backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                borderColor: 'rgba(78, 115, 223, 1)',
+                pointRadius: 3,
+                pointBackgroundColor: 'rgba(78, 115, 223, 1)',
+                pointBorderColor: 'rgba(78, 115, 223, 1)',
+                pointHoverRadius: 5,
+                pointHoverBackgroundColor: 'rgba(78, 115, 223, 1)',
+                pointHoverBorderColor: 'rgba(78, 115, 223, 1)',
+                pointHitRadius: 10,
+                pointBorderWidth: 2,
+                fill: true
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value;
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

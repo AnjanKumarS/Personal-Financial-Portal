@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Settings</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="nav nav-tabs mb-4">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#profile" data-bs-toggle="tab">Profile Settings</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#security" data-bs-toggle="tab">Security</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#notifications" data-bs-toggle="tab">Notifications</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <!-- Profile Settings Tab -->
+                        <div class="tab-pane fade show active" id="profile">
+                            <form>
+                                <div class="mb-3">
+                                    <label for="updateUsername" class="form-label">Username</label>
+                                    <input type="text" class="form-control" id="updateUsername"
+                                        value="{{ user.username }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="updateEmail" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="updateEmail" value="{{ user.email }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="bio" class="form-label">Bio</label>
+                                    <textarea class="form-control" id="bio" rows="3"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                            </form>
+                        </div>
+
+                        <!-- Security Tab -->
+                        <div class="tab-pane fade" id="security">
+                            <form>
+                                <div class="mb-3">
+                                    <label for="currentPassword" class="form-label">Current Password</label>
+                                    <input type="password" class="form-control" id="currentPassword">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="newPassword" class="form-label">New Password</label>
+                                    <input type="password" class="form-control" id="newPassword">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                                    <input type="password" class="form-control" id="confirmPassword">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Change Password</button>
+                            </form>
+                        </div>
+
+                        <!-- Notifications Tab -->
+                        <div class="tab-pane fade" id="notifications">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                                <label class="form-check-label" for="emailNotifications">
+                                    Email Notifications
+                                </label>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="pushNotifications">
+                                <label class="form-check-label" for="pushNotifications">
+                                    Push Notifications
+                                </label>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="monthlyNewsletter" checked>
+                                <label class="form-check-label" for="monthlyNewsletter">
+                                    Monthly Newsletter
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Preferences</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
