@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Personal Finance Portal
 
 A Flask-based web application for tracking personal finances, including expenses, budgets, investments, and bill reminders.
@@ -95,3 +96,6 @@ The application is designed to be easily deployable to AWS:
 - Application: AWS Elastic Beanstalk or EC2
 - Static files: AWS S3
 - Monitoring: AWS CloudWatch
+=======
+# Personal-Financial-Portal
+>>>>>>> 2e1455628f28cff30981be485371764872adb55c
