@@ -47,7 +47,7 @@ function confirmDelete(message) {
 
 // Function to format currency values
 function formatCurrency(amount) {
-    return '$' + parseFloat(amount).toFixed(2);
+    return '₹' + parseFloat(amount).toFixed(2);
 }
 
 // Function to toggle password visibility

@@ -14,24 +14,29 @@
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
             <h6 class="m-0 font-weight-bold text-primary">Your Bills</h6>
             <div class="dropdown">
-                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown"
+                    data-bs-toggle="dropdown" aria-expanded="false">
                     {% if active_filter == 'all' %}
-                        All Bills
+                    All Bills
                     {% elif active_filter == 'upcoming' %}
-                        Upcoming Bills
+                    Upcoming Bills
                     {% elif active_filter == 'paid' %}
-                        Paid Bills
+                    Paid Bills
                     {% elif active_filter == 'overdue' %}
-                        Overdue Bills
+                    Overdue Bills
                     {% else %}
-                        Filter
+                    Filter
                     {% endif %}
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="filterDropdown">
-                    <li><a class="dropdown-item {% if active_filter == 'all' %}active{% endif %}" href="{{ url_for('bills.index', filter='all') }}">All Bills</a></li>
-                    <li><a class="dropdown-item {% if active_filter == 'upcoming' %}active{% endif %}" href="{{ url_for('bills.index', filter='upcoming') }}">Upcoming</a></li>
-                    <li><a class="dropdown-item {% if active_filter == 'paid' %}active{% endif %}" href="{{ url_for('bills.index', filter='paid') }}">Paid</a></li>
-                    <li><a class="dropdown-item {% if active_filter == 'overdue' %}active{% endif %}" href="{{ url_for('bills.index', filter='overdue') }}">Overdue</a></li>
+                    <li><a class="dropdown-item {% if active_filter == 'all' %}active{% endif %}"
+                            href="{{ url_for('bills.index', filter='all') }}">All Bills</a></li>
+                    <li><a class="dropdown-item {% if active_filter == 'upcoming' %}active{% endif %}"
+                            href="{{ url_for('bills.index', filter='upcoming') }}">Upcoming</a></li>
+                    <li><a class="dropdown-item {% if active_filter == 'paid' %}active{% endif %}"
+                            href="{{ url_for('bills.index', filter='paid') }}">Paid</a></li>
+                    <li><a class="dropdown-item {% if active_filter == 'overdue' %}active{% endif %}"
+                            href="{{ url_for('bills.index', filter='overdue') }}">Overdue</a></li>
                 </ul>
             </div>
         </div>
@@ -54,7 +59,7 @@
                         <tr>
                             <td>{{ bill.name }}</td>
                             <td>{{ bill.category }}</td>
-                            <td>${{ "%.2f"|format(bill.amount) }}</td>
+                            <td>₹{{ "%.2f"|format(bill.amount) }}</td>
                             <td>{{ bill.due_date.strftime('%Y-%m-%d') }}</td>
                             <td>
                                 {% if bill.status == 'Paid' %}
@@ -73,13 +78,16 @@
                                 {% endif %}
                             </td>
                             <td>
-                                <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#markPaidModal{{ bill.id }}">
+                                <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal"
+                                    data-bs-target="#markPaidModal{{ bill.id }}">
                                     <i class="fas fa-check"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editBillModal{{ bill.id }}">
+                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                                    data-bs-target="#editBillModal{{ bill.id }}">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteBillModal{{ bill.id }}">
+                                <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                                    data-bs-target="#deleteBillModal{{ bill.id }}">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </td>
@@ -139,7 +147,8 @@
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
                                 Total Due This Month</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">${{ "%.2f"|format(total_due_month) }}</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">₹{{ "%.2f"|format(total_due_month) }}
+                            </div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
@@ -191,7 +200,7 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label for="amount" class="form-label">Amount ($)</label>
+                        <label for="amount" class="form-label">Amount (₹)</label>
                         <input type="number" step="0.01" class="form-control" id="amount" name="amount" required>
                     </div>
                     <div class="mb-3">
@@ -223,7 +232,8 @@
 
 <!-- Edit Bill Modals -->
 {% for bill in bills %}
-<div class="modal fade" id="editBillModal{{ bill.id }}" tabindex="-1" aria-labelledby="editBillModalLabel{{ bill.id }}" aria-hidden="true">
+<div class="modal fade" id="editBillModal{{ bill.id }}" tabindex="-1" aria-labelledby="editBillModalLabel{{ bill.id }}"
+    aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -234,50 +244,66 @@
                 <form method="POST" action="{{ url_for('bills.edit_bill', bill_id=bill.id) }}">
                     <div class="mb-3">
                         <label for="name{{ bill.id }}" class="form-label">Bill Name</label>
-                        <input type="text" class="form-control" id="name{{ bill.id }}" name="name" value="{{ bill.name }}" required>
+                        <input type="text" class="form-control" id="name{{ bill.id }}" name="name"
+                            value="{{ bill.name }}" required>
                     </div>
                     <div class="mb-3">
                         <label for="category{{ bill.id }}" class="form-label">Category</label>
                         <select class="form-select" id="category{{ bill.id }}" name="category" required>
                             <option value="">Select a category</option>
-                            <option value="Utilities" {% if bill.category == 'Utilities' %}selected{% endif %}>Utilities</option>
-                            <option value="Rent/Mortgage" {% if bill.category == 'Rent/Mortgage' %}selected{% endif %}>Rent/Mortgage</option>
-                            <option value="Insurance" {% if bill.category == 'Insurance' %}selected{% endif %}>Insurance</option>
-                            <option value="Subscription" {% if bill.category == 'Subscription' %}selected{% endif %}>Subscription</option>
-                            <option value="Credit Card" {% if bill.category == 'Credit Card' %}selected{% endif %}>Credit Card</option>
-                            <option value="Loan" {% if bill.category == 'Loan' %}selected{% endif %}>Loan</option>
-                            <option value="Phone" {% if bill.category == 'Phone' %}selected{% endif %}>Phone</option>
-                            <option value="Internet" {% if bill.category == 'Internet' %}selected{% endif %}>Internet</option>
-                            <option value="Other" {% if bill.category == 'Other' %}selected{% endif %}>Other</option>
+                            <option value="Utilities" {% if bill.category=='Utilities' %}selected{% endif %}>Utilities
+                            </option>
+                            <option value="Rent/Mortgage" {% if bill.category=='Rent/Mortgage' %}selected{% endif %}>
+                                Rent/Mortgage</option>
+                            <option value="Insurance" {% if bill.category=='Insurance' %}selected{% endif %}>Insurance
+                            </option>
+                            <option value="Subscription" {% if bill.category=='Subscription' %}selected{% endif %}>
+                                Subscription</option>
+                            <option value="Credit Card" {% if bill.category=='Credit Card' %}selected{% endif %}>Credit
+                                Card</option>
+                            <option value="Loan" {% if bill.category=='Loan' %}selected{% endif %}>Loan</option>
+                            <option value="Phone" {% if bill.category=='Phone' %}selected{% endif %}>Phone</option>
+                            <option value="Internet" {% if bill.category=='Internet' %}selected{% endif %}>Internet
+                            </option>
+                            <option value="Other" {% if bill.category=='Other' %}selected{% endif %}>Other</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label for="amount{{ bill.id }}" class="form-label">Amount ($)</label>
-                        <input type="number" step="0.01" class="form-control" id="amount{{ bill.id }}" name="amount" value="{{ bill.amount }}" required>
+                        <label for="amount{{ bill.id }}" class="form-label">Amount (₹)</label>
+                        <input type="number" step="0.01" class="form-control" id="amount{{ bill.id }}" name="amount"
+                            value="{{ bill.amount }}" required>
                     </div>
                     <div class="mb-3">
                         <label for="due_date{{ bill.id }}" class="form-label">Due Date</label>
-                        <input type="date" class="form-control" id="due_date{{ bill.id }}" name="due_date" value="{{ bill.due_date.strftime('%Y-%m-%d') }}" required>
+                        <input type="date" class="form-control" id="due_date{{ bill.id }}" name="due_date"
+                            value="{{ bill.due_date.strftime('%Y-%m-%d') }}" required>
                     </div>
                     <div class="mb-3">
                         <label for="status{{ bill.id }}" class="form-label">Status</label>
                         <select class="form-select" id="status{{ bill.id }}" name="status" required>
-                            <option value="Upcoming" {% if bill.status == 'Upcoming' %}selected{% endif %}>Upcoming</option>
-                            <option value="Paid" {% if bill.status == 'Paid' %}selected{% endif %}>Paid</option>
-                            <option value="Overdue" {% if bill.status == 'Overdue' %}selected{% endif %}>Overdue</option>
+                            <option value="Upcoming" {% if bill.status=='Upcoming' %}selected{% endif %}>Upcoming
+                            </option>
+                            <option value="Paid" {% if bill.status=='Paid' %}selected{% endif %}>Paid</option>
+                            <option value="Overdue" {% if bill.status=='Overdue' %}selected{% endif %}>Overdue</option>
                         </select>
                     </div>
                     <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="is_recurring{{ bill.id }}" name="is_recurring" {% if bill.is_recurring %}checked{% endif %}>
+                        <input type="checkbox" class="form-check-input" id="is_recurring{{ bill.id }}"
+                            name="is_recurring" {% if bill.is_recurring %}checked{% endif %}>
                         <label class="form-check-label" for="is_recurring{{ bill.id }}">Recurring Bill</label>
                     </div>
-                    <div class="mb-3" id="recurrenceOptions{{ bill.id }}" style="display: {% if bill.is_recurring %}block{% else %}none{% endif %};">
+                    <div class="mb-3" id="recurrenceOptions{{ bill.id }}"
+                        style="display: {% if bill.is_recurring %}block{% else %}none{% endif %};">
                         <label for="recurrence_frequency{{ bill.id }}" class="form-label">Recurrence Frequency</label>
                         <select class="form-select" id="recurrence_frequency{{ bill.id }}" name="recurrence_frequency">
-                            <option value="Weekly" {% if bill.recurrence_frequency == 'Weekly' %}selected{% endif %}>Weekly</option>
-                            <option value="Monthly" {% if bill.recurrence_frequency == 'Monthly' %}selected{% endif %}>Monthly</option>
-                            <option value="Quarterly" {% if bill.recurrence_frequency == 'Quarterly' %}selected{% endif %}>Quarterly</option>
-                            <option value="Yearly" {% if bill.recurrence_frequency == 'Yearly' %}selected{% endif %}>Yearly</option>
+                            <option value="Weekly" {% if bill.recurrence_frequency=='Weekly' %}selected{% endif %}>
+                                Weekly</option>
+                            <option value="Monthly" {% if bill.recurrence_frequency=='Monthly' %}selected{% endif %}>
+                                Monthly</option>
+                            <option value="Quarterly" {% if bill.recurrence_frequency=='Quarterly' %}selected{% endif
+                                %}>Quarterly</option>
+                            <option value="Yearly" {% if bill.recurrence_frequency=='Yearly' %}selected{% endif %}>
+                                Yearly</option>
                         </select>
                     </div>
                     <div class="modal-footer">
@@ -293,7 +319,8 @@
 
 <!-- Delete Bill Modals -->
 {% for bill in bills %}
-<div class="modal fade" id="deleteBillModal{{ bill.id }}" tabindex="-1" aria-labelledby="deleteBillModalLabel{{ bill.id }}" aria-hidden="true">
+<div class="modal fade" id="deleteBillModal{{ bill.id }}" tabindex="-1"
+    aria-labelledby="deleteBillModalLabel{{ bill.id }}" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -304,7 +331,7 @@
                 <p>Are you sure you want to delete this bill?</p>
                 <p><strong>Name:</strong> {{ bill.name }}</p>
                 <p><strong>Category:</strong> {{ bill.category }}</p>
-                <p><strong>Amount:</strong> ${{ "%.2f"|format(bill.amount) }}</p>
+                <p><strong>Amount:</strong> ₹{{ "%.2f"|format(bill.amount) }}</p>
                 <p><strong>Due Date:</strong> {{ bill.due_date.strftime('%Y-%m-%d') }}</p>
             </div>
             <div class="modal-footer">
@@ -320,7 +347,8 @@
 
 <!-- Mark Paid Modals -->
 {% for bill in bills %}
-<div class="modal fade" id="markPaidModal{{ bill.id }}" tabindex="-1" aria-labelledby="markPaidModalLabel{{ bill.id }}" aria-hidden="true">
+<div class="modal fade" id="markPaidModal{{ bill.id }}" tabindex="-1" aria-labelledby="markPaidModalLabel{{ bill.id }}"
+    aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -331,7 +359,7 @@
                 <p>Are you sure you want to mark this bill as paid?</p>
                 <p><strong>Name:</strong> {{ bill.name }}</p>
                 <p><strong>Category:</strong> {{ bill.category }}</p>
-                <p><strong>Amount:</strong> ${{ "%.2f"|format(bill.amount) }}</p>
+                <p><strong>Amount:</strong> ₹{{ "%.2f"|format(bill.amount) }}</p>
                 <p><strong>Due Date:</strong> {{ bill.due_date.strftime('%Y-%m-%d') }}</p>
             </div>
             <div class="modal-footer">
@@ -347,52 +375,52 @@
 
 <!-- JavaScript for Chart and Form Behavior -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Toggle recurrence options based on checkbox
-    const isRecurringCheckbox = document.getElementById('is_recurring');
-    const recurrenceOptions = document.getElementById('recurrenceOptions');
-    
-    if (isRecurringCheckbox && recurrenceOptions) {
-        isRecurringCheckbox.addEventListener('change', function() {
-            recurrenceOptions.style.display = this.checked ? 'block' : 'none';
-        });
-    }
+    document.addEventListener('DOMContentLoaded', function () {
+        // Toggle recurrence options based on checkbox
+        const isRecurringCheckbox = document.getElementById('is_recurring');
+        const recurrenceOptions = document.getElementById('recurrenceOptions');
 
-    // Bills Chart
-    var billsCtx = document.getElementById('billsChart').getContext('2d');
-    var billsChart = new Chart(billsCtx, {
-        type: 'bar',
-        data: {
-            labels: {{ bill_categories|tojson }},
-            datasets: [{
-                label: 'Amount Due',
-                data: {{ category_amounts|tojson }},
-                backgroundColor: 'rgba(78, 115, 223, 0.8)',
-                borderColor: 'rgba(78, 115, 223, 1)',
-                borderWidth: 1
+        if (isRecurringCheckbox && recurrenceOptions) {
+            isRecurringCheckbox.addEventListener('change', function () {
+                recurrenceOptions.style.display = this.checked ? 'block' : 'none';
+            });
+        }
+
+        // Bills Chart
+        var billsCtx = document.getElementById('billsChart').getContext('2d');
+        var billsChart = new Chart(billsCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ bill_categories| tojson }},
+        datasets: [{
+            label: 'Amount Due',
+            data: {{ category_amounts| tojson }},
+        backgroundColor: 'rgba(78, 115, 223, 0.8)',
+        borderColor: 'rgba(78, 115, 223, 1)',
+        borderWidth: 1
             }]
         },
         options: {
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return '$' + value;
-                        }
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function (value) {
+                        return '₹' + value;
                     }
                 }
+            }
+        },
+        plugins: {
+            title: {
+                display: true,
+                text: 'Bills by Category'
             },
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Bills by Category'
-                },
-                legend: {
-                    position: 'bottom'
-                }
+            legend: {
+                position: 'bottom'
             }
         }
+    }
     });
 });
 </script>

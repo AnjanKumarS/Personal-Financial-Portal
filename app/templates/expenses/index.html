@@ -14,24 +14,29 @@
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
             <h6 class="m-0 font-weight-bold text-primary">Your Expenses</h6>
             <div class="dropdown">
-                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown"
+                    data-bs-toggle="dropdown" aria-expanded="false">
                     {% if active_filter == 'all' %}
-                        All Expenses
+                    All Expenses
                     {% elif active_filter == 'this_month' %}
-                        This Month
+                    This Month
                     {% elif active_filter == 'last_month' %}
-                        Last Month
+                    Last Month
                     {% elif active_filter == 'this_year' %}
-                        This Year
+                    This Year
                     {% else %}
-                        Filter
+                    Filter
                     {% endif %}
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="filterDropdown">
-                    <li><a class="dropdown-item {% if active_filter == 'all' %}active{% endif %}" href="{{ url_for('expenses.index', filter='all') }}">All Expenses</a></li>
-                    <li><a class="dropdown-item {% if active_filter == 'this_month' %}active{% endif %}" href="{{ url_for('expenses.index', filter='this_month') }}">This Month</a></li>
-                    <li><a class="dropdown-item {% if active_filter == 'last_month' %}active{% endif %}" href="{{ url_for('expenses.index', filter='last_month') }}">Last Month</a></li>
-                    <li><a class="dropdown-item {% if active_filter == 'this_year' %}active{% endif %}" href="{{ url_for('expenses.index', filter='this_year') }}">This Year</a></li>
+                    <li><a class="dropdown-item {% if active_filter == 'all' %}active{% endif %}"
+                            href="{{ url_for('expenses.index', filter='all') }}">All Expenses</a></li>
+                    <li><a class="dropdown-item {% if active_filter == 'this_month' %}active{% endif %}"
+                            href="{{ url_for('expenses.index', filter='this_month') }}">This Month</a></li>
+                    <li><a class="dropdown-item {% if active_filter == 'last_month' %}active{% endif %}"
+                            href="{{ url_for('expenses.index', filter='last_month') }}">Last Month</a></li>
+                    <li><a class="dropdown-item {% if active_filter == 'this_year' %}active{% endif %}"
+                            href="{{ url_for('expenses.index', filter='this_year') }}">This Year</a></li>
                 </ul>
             </div>
         </div>
@@ -53,12 +58,14 @@
                             <td>{{ expense.date.strftime('%Y-%m-%d') }}</td>
                             <td>{{ expense.category }}</td>
                             <td>{{ expense.description }}</td>
-                            <td class="text-danger">${{ "%.2f"|format(expense.amount) }}</td>
+                            <td class="text-danger">₹{{ "%.2f"|format(expense.amount) }}</td>
                             <td>
-                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editExpenseModal{{ expense.id }}">
+                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                                    data-bs-target="#editExpenseModal{{ expense.id }}">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteExpenseModal{{ expense.id }}">
+                                <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                                    data-bs-target="#deleteExpenseModal{{ expense.id }}">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </td>
@@ -83,7 +90,7 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-md-6">
-                    <h4>Total Expenses: <span class="text-danger">${{ "%.2f"|format(total_amount) }}</span></h4>
+                    <h4>Total Expenses: <span class="text-danger">₹{{ "%.2f"|format(total_amount) }}</span></h4>
                     <p>For the current month</p>
                 </div>
                 <div class="col-md-6">
@@ -129,7 +136,7 @@
                         <input type="text" class="form-control" id="description" name="description" required>
                     </div>
                     <div class="mb-3">
-                        <label for="amount" class="form-label">Amount ($)</label>
+                        <label for="amount" class="form-label">Amount (₹)</label>
                         <input type="number" step="0.01" class="form-control" id="amount" name="amount" required>
                     </div>
                     <div class="modal-footer">
@@ -144,7 +151,8 @@
 
 <!-- Edit Expense Modals -->
 {% for expense in expenses %}
-<div class="modal fade" id="editExpenseModal{{ expense.id }}" tabindex="-1" aria-labelledby="editExpenseModalLabel{{ expense.id }}" aria-hidden="true">
+<div class="modal fade" id="editExpenseModal{{ expense.id }}" tabindex="-1"
+    aria-labelledby="editExpenseModalLabel{{ expense.id }}" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -155,31 +163,42 @@
                 <form method="POST" action="{{ url_for('expenses.edit_expense', expense_id=expense.id) }}">
                     <div class="mb-3">
                         <label for="date{{ expense.id }}" class="form-label">Date</label>
-                        <input type="date" class="form-control" id="date{{ expense.id }}" name="date" value="{{ expense.date.strftime('%Y-%m-%d') }}" required>
+                        <input type="date" class="form-control" id="date{{ expense.id }}" name="date"
+                            value="{{ expense.date.strftime('%Y-%m-%d') }}" required>
                     </div>
                     <div class="mb-3">
                         <label for="category{{ expense.id }}" class="form-label">Category</label>
                         <select class="form-select" id="category{{ expense.id }}" name="category" required>
                             <option value="">Select a category</option>
-                            <option value="Housing" {% if expense.category == 'Housing' %}selected{% endif %}>Housing</option>
-                            <option value="Transportation" {% if expense.category == 'Transportation' %}selected{% endif %}>Transportation</option>
-                            <option value="Food" {% if expense.category == 'Food' %}selected{% endif %}>Food</option>
-                            <option value="Utilities" {% if expense.category == 'Utilities' %}selected{% endif %}>Utilities</option>
-                            <option value="Entertainment" {% if expense.category == 'Entertainment' %}selected{% endif %}>Entertainment</option>
-                            <option value="Healthcare" {% if expense.category == 'Healthcare' %}selected{% endif %}>Healthcare</option>
-                            <option value="Shopping" {% if expense.category == 'Shopping' %}selected{% endif %}>Shopping</option>
-                            <option value="Personal" {% if expense.category == 'Personal' %}selected{% endif %}>Personal</option>
-                            <option value="Education" {% if expense.category == 'Education' %}selected{% endif %}>Education</option>
-                            <option value="Other" {% if expense.category == 'Other' %}selected{% endif %}>Other</option>
+                            <option value="Housing" {% if expense.category=='Housing' %}selected{% endif %}>Housing
+                            </option>
+                            <option value="Transportation" {% if expense.category=='Transportation' %}selected{% endif
+                                %}>Transportation</option>
+                            <option value="Food" {% if expense.category=='Food' %}selected{% endif %}>Food</option>
+                            <option value="Utilities" {% if expense.category=='Utilities' %}selected{% endif %}>
+                                Utilities</option>
+                            <option value="Entertainment" {% if expense.category=='Entertainment' %}selected{% endif %}>
+                                Entertainment</option>
+                            <option value="Healthcare" {% if expense.category=='Healthcare' %}selected{% endif %}>
+                                Healthcare</option>
+                            <option value="Shopping" {% if expense.category=='Shopping' %}selected{% endif %}>Shopping
+                            </option>
+                            <option value="Personal" {% if expense.category=='Personal' %}selected{% endif %}>Personal
+                            </option>
+                            <option value="Education" {% if expense.category=='Education' %}selected{% endif %}>
+                                Education</option>
+                            <option value="Other" {% if expense.category=='Other' %}selected{% endif %}>Other</option>
                         </select>
                     </div>
                     <div class="mb-3">
                         <label for="description{{ expense.id }}" class="form-label">Description</label>
-                        <input type="text" class="form-control" id="description{{ expense.id }}" name="description" value="{{ expense.description }}" required>
+                        <input type="text" class="form-control" id="description{{ expense.id }}" name="description"
+                            value="{{ expense.description }}" required>
                     </div>
                     <div class="mb-3">
-                        <label for="amount{{ expense.id }}" class="form-label">Amount ($)</label>
-                        <input type="number" step="0.01" class="form-control" id="amount{{ expense.id }}" name="amount" value="{{ expense.amount }}" required>
+                        <label for="amount{{ expense.id }}" class="form-label">Amount (₹)</label>
+                        <input type="number" step="0.01" class="form-control" id="amount{{ expense.id }}" name="amount"
+                            value="{{ expense.amount }}" required>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -194,7 +213,8 @@
 
 <!-- Delete Expense Modals -->
 {% for expense in expenses %}
-<div class="modal fade" id="deleteExpenseModal{{ expense.id }}" tabindex="-1" aria-labelledby="deleteExpenseModalLabel{{ expense.id }}" aria-hidden="true">
+<div class="modal fade" id="deleteExpenseModal{{ expense.id }}" tabindex="-1"
+    aria-labelledby="deleteExpenseModalLabel{{ expense.id }}" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -206,7 +226,7 @@
                 <p><strong>Date:</strong> {{ expense.date.strftime('%Y-%m-%d') }}</p>
                 <p><strong>Category:</strong> {{ expense.category }}</p>
                 <p><strong>Description:</strong> {{ expense.description }}</p>
-                <p><strong>Amount:</strong> ${{ "%.2f"|format(expense.amount) }}</p>
+                <p><strong>Amount:</strong> ₹{{ "%.2f"|format(expense.amount) }}</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -221,43 +241,43 @@
 
 <!-- JavaScript for Chart -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    var ctx = document.getElementById('expenseChart').getContext('2d');
-    var expenseChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: {{ categories|tojson }},
-            datasets: [{
-                data: {{ category_amounts|tojson }},
-                backgroundColor: [
-                    '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
-                    '#5a5c69', '#858796', '#6f42c1', '#20c9a6', '#fd7e14'
-                ],
-                hoverBackgroundColor: [
-                    '#2e59d9', '#17a673', '#2c9faf', '#f4b619', '#e02d1b',
-                    '#4e4f52', '#717384', '#5d36a4', '#1aa88f', '#f56e00'
-                ],
-                hoverBorderColor: "rgba(234, 236, 244, 1)",
+    document.addEventListener('DOMContentLoaded', function () {
+        var ctx = document.getElementById('expenseChart').getContext('2d');
+        var expenseChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: {{ categories| tojson }},
+        datasets: [{
+            data: {{ category_amounts| tojson }},
+        backgroundColor: [
+            '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+            '#5a5c69', '#858796', '#6f42c1', '#20c9a6', '#fd7e14'
+        ],
+        hoverBackgroundColor: [
+            '#2e59d9', '#17a673', '#2c9faf', '#f4b619', '#e02d1b',
+            '#4e4f52', '#717384', '#5d36a4', '#1aa88f', '#f56e00'
+        ],
+        hoverBorderColor: "rgba(234, 236, 244, 1)",
             }],
         },
         options: {
-            maintainAspectRatio: false,
-            tooltips: {
-                backgroundColor: "rgb(255,255,255)",
-                bodyFontColor: "#858796",
-                borderColor: '#dddfeb',
-                borderWidth: 1,
-                xPadding: 15,
-                yPadding: 15,
-                displayColors: false,
-                caretPadding: 10,
-            },
-            legend: {
-                display: true,
-                position: 'bottom'
-            },
-            cutoutPercentage: 80,
+        maintainAspectRatio: false,
+        tooltips: {
+            backgroundColor: "rgb(255,255,255)",
+            bodyFontColor: "#858796",
+            borderColor: '#dddfeb',
+            borderWidth: 1,
+            xPadding: 15,
+            yPadding: 15,
+            displayColors: false,
+            caretPadding: 10,
         },
+        legend: {
+            display: true,
+            position: 'bottom'
+        },
+        cutoutPercentage: 80,
+    },
     });
 });
 </script>

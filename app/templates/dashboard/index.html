@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,35 +8,36 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
     {% extends "base.html" %}
-    
+
     {% block content %}
     <div class="container mt-4">
         <h1 class="mb-4">Financial Dashboard</h1>
-        
+
         <div class="row">
             <!-- Summary Cards -->
             <div class="col-md-4 mb-4">
                 <div class="card h-100 shadow-sm">
                     <div class="card-body">
                         <h5 class="card-title">Total Expenses</h5>
-                        <h2 class="card-text text-primary">${{ "%.2f"|format(total_expenses) }}</h2>
+                        <h2 class="card-text text-primary">₹{{ "%.2f"|format(total_expenses) }}</h2>
                         <p class="text-muted">Current Month</p>
                     </div>
                 </div>
             </div>
-            
+
             <div class="col-md-4 mb-4">
                 <div class="card h-100 shadow-sm">
                     <div class="card-body">
                         <h5 class="card-title">Budget Status</h5>
-                        <h2 class="card-text text-success">${{ "%.2f"|format(total_budget - total_spent) }}</h2>
+                        <h2 class="card-text text-success">₹{{ "%.2f"|format(total_budget - total_spent) }}</h2>
                         <p class="text-muted">Remaining</p>
                     </div>
                 </div>
             </div>
-            
+
             <div class="col-md-4 mb-4">
                 <div class="card h-100 shadow-sm">
                     <div class="card-body">
@@ -46,7 +48,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="row">
             <!-- Expense Chart -->
             <div class="col-md-6 mb-4">
@@ -59,7 +61,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Budget Chart -->
             <div class="col-md-6 mb-4">
                 <div class="card shadow-sm">
@@ -72,7 +74,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="row">
             <!-- Recent Transactions -->
             <div class="col-md-6 mb-4">
@@ -99,7 +101,7 @@
                                         <td>{{ expense.date.strftime('%Y-%m-%d') }}</td>
                                         <td>{{ expense.category }}</td>
                                         <td>{{ expense.description }}</td>
-                                        <td class="text-end">${{ "%.2f"|format(expense.amount) }}</td>
+                                        <td class="text-end">₹{{ "%.2f"|format(expense.amount) }}</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -111,7 +113,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Upcoming Bills -->
             <div class="col-md-6 mb-4">
                 <div class="card shadow-sm">
@@ -137,7 +139,7 @@
                                         <td>{{ bill.name }}</td>
                                         <td>{{ bill.due_date.strftime('%Y-%m-%d') }}</td>
                                         <td>{{ bill.category }}</td>
-                                        <td class="text-end">${{ "%.2f"|format(bill.amount) }}</td>
+                                        <td class="text-end">₹{{ "%.2f"|format(bill.amount) }}</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -151,69 +153,70 @@
             </div>
         </div>
     </div>
-    
+
     <script>
         // Real data for charts
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Expense Chart
             var expenseCtx = document.getElementById('expenseChart').getContext('2d');
             var expenseChart = new Chart(expenseCtx, {
                 type: 'pie',
                 data: {
-                    labels: {{ expense_categories|tojson }},
-                    datasets: [{
-                        data: {{ expense_amounts|tojson }},
-                        backgroundColor: [
-                            'rgba(255, 99, 132, 0.6)',
-                            'rgba(54, 162, 235, 0.6)',
-                            'rgba(255, 206, 86, 0.6)',
-                            'rgba(75, 192, 192, 0.6)',
-                            'rgba(153, 102, 255, 0.6)',
-                            'rgba(255, 159, 64, 0.6)',
-                            'rgba(201, 203, 207, 0.6)',
-                            'rgba(255, 205, 86, 0.6)',
-                            'rgba(75, 192, 192, 0.6)',
-                            'rgba(54, 162, 235, 0.6)'
-                        ]
+                    labels: {{ expense_categories| tojson }},
+            datasets: [{
+                data: {{ expense_amounts| tojson }},
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.6)',
+                'rgba(54, 162, 235, 0.6)',
+                'rgba(255, 206, 86, 0.6)',
+                'rgba(75, 192, 192, 0.6)',
+                'rgba(153, 102, 255, 0.6)',
+                'rgba(255, 159, 64, 0.6)',
+                'rgba(201, 203, 207, 0.6)',
+                'rgba(255, 205, 86, 0.6)',
+                'rgba(75, 192, 192, 0.6)',
+                'rgba(54, 162, 235, 0.6)'
+            ]
                     }]
                 },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'right',
-                        }
-                    }
+            options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'right',
                 }
+            }
+        }
             });
-            
-            // Budget Chart
-            var budgetCtx = document.getElementById('budgetChart').getContext('2d');
-            var budgetChart = new Chart(budgetCtx, {
-                type: 'bar',
-                data: {
-                    labels: {{ budget_categories|tojson }},
-                    datasets: [{
-                        label: 'Budget',
-                        data: {{ budget_amounts|tojson }},
-                        backgroundColor: 'rgba(54, 162, 235, 0.6)'
+
+        // Budget Chart
+        var budgetCtx = document.getElementById('budgetChart').getContext('2d');
+        var budgetChart = new Chart(budgetCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ budget_categories| tojson }},
+        datasets: [{
+            label: 'Budget',
+            data: {{ budget_amounts| tojson }},
+            backgroundColor: 'rgba(54, 162, 235, 0.6)'
                     }, {
-                        label: 'Actual',
-                        data: {{ spent_amounts|tojson }},
-                        backgroundColor: 'rgba(255, 99, 132, 0.6)'
+            label: 'Actual',
+            data: {{ spent_amounts| tojson }},
+            backgroundColor: 'rgba(255, 99, 132, 0.6)'
                     }]
                 },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
+        options: {
+            responsive: true,
+                scales: {
+                y: {
+                    beginAtZero: true
                 }
+            }
+        }
             });
         });
     </script>
     {% endblock %}
 </body>
+
 </html>

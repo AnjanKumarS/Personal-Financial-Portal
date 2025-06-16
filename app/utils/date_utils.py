@@ -6,7 +6,7 @@ def format_date(date):
 
 def format_currency(amount):
     """Format amount as currency string"""
-    return f"${amount:.2f}"
+    return f"₹{amount:.2f}"
 
 def get_month_name(month_number):
     """Get month name from month number"""
